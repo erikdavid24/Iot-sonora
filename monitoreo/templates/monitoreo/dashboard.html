@@ -1,0 +1,198 @@
+{% extends 'monitoreo/base.html' %}
+{% load static %}
+
+{% block content %}
+
+<div class="row mb-4 align-items-end">
+    <div class="col-md-5">
+        <h4 class="text-muted mb-1">Bienvenido al Panel</h4>
+        <h2>Monitoreo Climático</h2>
+    </div>
+
+    <div class="col-md-7 text-md-end">
+
+        <a href="{% url 'municipios' %}" class="btn btn-outline-dark btn-sm me-2 shadow-sm" title="Ver Tabla Completa">
+            <i class="bi bi-table"></i> Tabla
+        </a>
+
+        <a href="{% url 'exportar_csv' %}" class="btn btn-outline-success btn-sm me-2 shadow-sm" title="Descargar Historial">
+            <i class="bi bi-download"></i> CSV
+        </a>
+
+        <div class="dropdown d-inline-block">
+            <button class="btn btn-white border shadow-sm dropdown-toggle px-3 py-2" type="button" id="btnVariable" data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="bi bi-thermometer-half text-danger me-2"></i><span id="lbl-variable" class="fw-bold">Temperatura</span>
+            </button>
+
+            <ul class="dropdown-menu dropdown-menu-end shadow border-0" aria-labelledby="btnVariable">
+                <li><h6 class="dropdown-header text-uppercase small">Seleccionar Datos</h6></li>
+
+                <li><button class="dropdown-item py-2" onclick="cambiarModo('temperatura')">
+                    <i class="bi bi-thermometer-half text-danger me-2" style="width:20px"></i> Temperatura
+                </button></li>
+
+                <li><button class="dropdown-item py-2" onclick="cambiarModo('humedad')">
+                    <i class="bi bi-droplet-fill text-primary me-2" style="width:20px"></i> Humedad
+                </button></li>
+
+                <li><button class="dropdown-item py-2" onclick="cambiarModo('presion')">
+                    <i class="bi bi-speedometer text-info me-2" style="width:20px"></i> Presión
+                </button></li>
+
+                <li><hr class="dropdown-divider"></li>
+
+                <li><button class="dropdown-item py-2" onclick="cambiarModo('radioactividad')">
+                    <i class="bi bi-radioactive text-warning me-2" style="width:20px"></i> Radioactividad
+                </button></li>
+            </ul>
+        </div>
+
+        <div class="text-muted-small mt-2">
+            <i class="bi bi-clock"></i> Actualización: automática
+        </div>
+    </div>
+</div>
+
+<div class="row mb-5">
+    <div class="col-lg-6 mb-4 mb-lg-0">
+        <div class="card h-100">
+            <div class="card-body p-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div>
+                        <h5 class="card-title mb-0 fw-bold">Hermosillo</h5>
+                        <span class="text-muted small">Capital del Estado</span>
+                    </div>
+                </div>
+
+                <div class="d-flex align-items-baseline mb-3">
+                    <h2 id="val-hermosillo" class="display-4 fw-bold mb-0 me-2 text-dark">--</h2>
+                </div>
+
+                <div style="height: 220px; width: 100%;">
+                    <canvas id="chartHermosillo"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-6">
+        <div class="card h-100">
+            <div class="card-body p-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div>
+                        <h5 class="card-title mb-0 fw-bold">Guaymas</h5>
+                        <span class="text-muted small">Puerto y Costa</span>
+                    </div>
+                </div>
+
+                <div class="d-flex align-items-baseline mb-3">
+                    <h2 id="val-guaymas" class="display-4 fw-bold mb-0 me-2 text-dark">--</h2>
+                </div>
+
+                <div style="height: 220px; width: 100%;">
+                    <canvas id="chartGuaymas"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="zona-dinamica" class="row mb-5" style="display: none;">
+    <div class="col-12">
+        <div class="card border-0 shadow-lg">
+            <div class="card-body p-4">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h4 id="titulo-dinamico" class="mb-0 text-primary fw-bold">Detalle del Municipio</h4>
+                    <button class="btn btn-outline-secondary btn-sm rounded-pill px-3" onclick="cerrarGrafica()">
+                        <i class="bi bi-x-lg me-1"></i> Cerrar Vista
+                    </button>
+                </div>
+
+                <div style="height: 350px; width: 100%;">
+                    <canvas id="chartDinamico"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<h5 class="mb-4 fw-bold text-secondary"><i class="bi bi-grid-fill me-2"></i>Red de Sensores Municipales</h5>
+
+<div class="row row-cols-2 row-cols-md-4 g-4">
+
+    <div class="col">
+        <div class="card card-hover h-100 border-start border-4 border-info" onclick="abrirGrafica('cajeme', 'Cajeme', '#0dcaf0')">
+            <div class="card-body p-3">
+                <div class="text-muted small mb-1">Cajeme</div>
+                <h3 id="val-cajeme" class="mb-0 fw-bold text-dark">--</h3>
+            </div>
+        </div>
+    </div>
+
+    <div class="col">
+        <div class="card card-hover h-100 border-start border-4 border-warning" onclick="abrirGrafica('nogales', 'Nogales', '#ffc107')">
+            <div class="card-body p-3">
+                <div class="text-muted small mb-1">Nogales</div>
+                <h3 id="val-nogales" class="mb-0 fw-bold text-dark">--</h3>
+            </div>
+        </div>
+    </div>
+
+    <div class="col">
+        <div class="card card-hover h-100 border-start border-4 border-secondary" onclick="abrirGrafica('navojoa', 'Navojoa', '#6c757d')">
+            <div class="card-body p-3">
+                <div class="text-muted small mb-1">Navojoa</div>
+                <h3 id="val-navojoa" class="mb-0 fw-bold text-dark">--</h3>
+            </div>
+        </div>
+    </div>
+
+    <div class="col">
+        <div class="card card-hover h-100 border-start border-4 border-success" onclick="abrirGrafica('caborca', 'Caborca', '#198754')">
+            <div class="card-body p-3">
+                <div class="text-muted small mb-1">Caborca</div>
+                <h3 id="val-caborca" class="mb-0 fw-bold text-dark">--</h3>
+            </div>
+        </div>
+    </div>
+
+    <div class="col">
+        <div class="card card-hover h-100 border-start border-4 border-primary" onclick="abrirGrafica('san_luis_rio_colorado', 'San Luis R.C.', '#0d6efd')">
+            <div class="card-body p-3">
+                <div class="text-muted small mb-1">San Luis R.C.</div>
+                <h3 id="val-san_luis_rio_colorado" class="mb-0 fw-bold text-dark">--</h3>
+            </div>
+        </div>
+    </div>
+
+    <div class="col">
+        <div class="card card-hover h-100 border-start border-4 border-info" onclick="abrirGrafica('puerto_penasco', 'Pto. Peñasco', '#0dcaf0')">
+            <div class="card-body p-3">
+                <div class="text-muted small mb-1">Pto. Peñasco</div>
+                <h3 id="val-puerto_penasco" class="mb-0 fw-bold text-dark">--</h3>
+            </div>
+        </div>
+    </div>
+
+    <div class="col">
+        <div class="card card-hover h-100 border-start border-4 border-danger" onclick="abrirGrafica('agua_prieta', 'Agua Prieta', '#dc3545')">
+            <div class="card-body p-3">
+                <div class="text-muted small mb-1">Agua Prieta</div>
+                <h3 id="val-agua_prieta" class="mb-0 fw-bold text-dark">--</h3>
+            </div>
+        </div>
+    </div>
+
+    <div class="col">
+        <div class="card card-hover h-100 border-start border-4 border-dark" onclick="abrirGrafica('cananea', 'Cananea', '#212529')">
+            <div class="card-body p-3">
+                <div class="text-muted small mb-1">Cananea</div>
+                <h3 id="val-cananea" class="mb-0 fw-bold text-dark">--</h3>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script src="{% static 'monitoreo/js/charts.js' %}?v=3.0"></script>
+{% endblock %}

@@ -1,0 +1,126 @@
+{% extends 'monitoreo/base.html' %}
+
+{% block content %}
+<div class="row mb-4 align-items-center">
+    <div class="col-md-8">
+        <h2 class="fw-bold">📚 Historial Completo</h2>
+        <p class="text-muted">Registro detallado de todos los sensores</p>
+    </div>
+    <div class="col-md-4 text-end">
+        <a href="{% url 'dashboard' %}" class="btn btn-outline-primary rounded-pill">
+            <i class="bi bi-arrow-left"></i> Volver al Dashboard
+        </a>
+    </div>
+</div>
+
+<div class="card border-0 shadow-lg">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="bg-light">
+                    <tr>
+                        <th class="ps-4 py-3">FECHA Y HORA</th>
+                        <th class="py-3">MUNICIPIO</th>
+                        <th class="py-3">VARIABLE</th>
+                        <th class="py-3">VALOR</th>
+                        <th class="pe-4 py-3 text-end">ESTADO</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for dato in page_obj %}
+                    <tr>
+                        <td class="ps-4 text-muted small fw-bold">
+                            {{ dato.fecha|date:"d/m/Y H:i:s" }}
+                        </td>
+                        <td>
+                            <span class="fw-bold text-dark">{{ dato.municipio|title }}</span>
+                        </td>
+
+                        <td>
+                            {% if dato.variable == 'temperatura' %}
+                                <span class="badge bg-danger bg-opacity-10 text-danger rounded-pill px-3">
+                                    <i class="bi bi-thermometer-half"></i> Temp
+                                </span>
+                            {% elif dato.variable == 'humedad' %}
+                                <span class="badge bg-primary bg-opacity-10 text-primary rounded-pill px-3">
+                                    <i class="bi bi-droplet-fill"></i> Humedad
+                                </span>
+                            {% elif dato.variable == 'presion' %}
+                                <span class="badge bg-info bg-opacity-10 text-info rounded-pill px-3">
+                                    <i class="bi bi-speedometer"></i> Presión
+                                </span>
+                            {% elif dato.variable == 'radioactividad' %}
+                                <span class="badge bg-warning bg-opacity-10 text-warning rounded-pill px-3">
+                                    <i class="bi bi-radioactive"></i> Rad
+                                </span>
+                            {% else %}
+                                <span class="badge bg-secondary bg-opacity-10 text-secondary rounded-pill px-3">
+                                    {{ dato.variable }}
+                                </span>
+                            {% endif %}
+                        </td>
+
+                        <td class="fw-bold fs-5">
+                            {{ dato.valor }}
+                            <small class="text-muted fs-6">
+                                {% if dato.variable == 'temperatura' %}°C
+                                {% elif dato.variable == 'humedad' %}%
+                                {% elif dato.variable == 'presion' %}hPa
+                                {% elif dato.variable == 'radioactividad' %}µSv
+                                {% endif %}
+                            </small>
+                        </td>
+
+                        <td class="pe-4 text-end">
+                            <i class="bi bi-check-circle-fill text-success"></i>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="text-center py-5 text-muted">
+                            Aún no hay datos registrados.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="card-footer bg-white border-0 py-3">
+        <nav aria-label="Navegación de página">
+            <ul class="pagination justify-content-center mb-0">
+                {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link rounded-pill border-0 text-dark mx-1" href="?page={{ page_obj.previous_page_number }}">
+                            <i class="bi bi-chevron-left"></i> Anterior
+                        </a>
+                    </li>
+                {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link rounded-pill border-0 mx-1">Anterior</span>
+                    </li>
+                {% endif %}
+
+                <li class="page-item disabled">
+                    <span class="page-link border-0 text-muted mx-2">
+                        Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
+                    </span>
+                </li>
+
+                {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link rounded-pill border-0 text-dark mx-1" href="?page={{ page_obj.next_page_number }}">
+                            Siguiente <i class="bi bi-chevron-right"></i>
+                        </a>
+                    </li>
+                {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link rounded-pill border-0 mx-1">Siguiente</span>
+                    </li>
+                {% endif %}
+            </ul>
+        </nav>
+    </div>
+</div>
+{% endblock %}

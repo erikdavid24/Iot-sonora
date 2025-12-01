@@ -1,0 +1,14 @@
+# Python y Django
+*.pyc
+__pycache__/
+db.sqlite3
+.venv/
+venv/
+.env
+
+# PyCharm / VS Code
+.idea/
+.vscode/
+
+# Archivos estáticos recolectados (opcional)
+staticfiles/
